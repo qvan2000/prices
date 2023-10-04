@@ -7,6 +7,8 @@ plugins {
 	kotlin("jvm") version "1.8.22"
 	kotlin("plugin.spring") version kotlinVersion
 	kotlin("plugin.jpa") version kotlinVersion
+	kotlin("plugin.allopen") version kotlinVersion
+	kotlin("plugin.noarg") version kotlinVersion
 	kotlin("kapt") version kotlinVersion
 }
 
@@ -34,14 +36,27 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.boot:spring-boot-starter-security")
+	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.flywaydb:flyway-core")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.apache.poi:poi:5.2.3")
 	implementation("org.apache.poi:poi-ooxml:5.2.3")
+	implementation("io.jsonwebtoken:jjwt-impl:0.11.5")
+	implementation("io.jsonwebtoken:jjwt-api:0.11.5")
+	implementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
 	runtimeOnly("org.postgresql:postgresql")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	kapt("org.springframework.boot:spring-boot-configuration-processor")
+}
+
+allOpen {
+	annotation("jakarta.persistence.Entity")
+}
+
+noArg {
+	annotation("jakarta.persistence.Entity")
 }
 
 tasks.withType<KotlinCompile> {

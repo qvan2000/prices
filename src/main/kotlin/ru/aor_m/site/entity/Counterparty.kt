@@ -1,14 +1,13 @@
 package ru.aor_m.site.entity
 
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
+import jakarta.persistence.*
 import java.util.*
 
 @Entity(name = "counterparty")
 class Counterparty {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     var id: UUID? = null
 
     @Column(name = "name")

@@ -7,6 +7,7 @@ import java.util.UUID
 class FilesCounterparty {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     var id: UUID? = null
 
     @Column(name = "name")

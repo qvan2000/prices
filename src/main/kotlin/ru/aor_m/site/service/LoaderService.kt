@@ -1,6 +1,6 @@
 package ru.aor_m.site.service
 
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.access.annotation.Secured
 import org.springframework.stereotype.Service
 import ru.aor_m.site.entity.Counterparty
 import ru.aor_m.site.entity.FilesCounterparty
@@ -14,17 +14,12 @@ import kotlin.io.path.pathString
 
 
 @Service
-class LoaderService {
+@Secured("ROLE_ADMIN")
+class LoaderService(private var filesCounterpartyRepository: FilesCounterpartyRepository, private var counterpartyRepository: CounterpartyRepository) {
     /*companion object {
         private const val interval = "PT1D"
         private const val delay = "PT01M"
     }*/
-
-    @Autowired
-    private lateinit var filesCounterpartyRepository: FilesCounterpartyRepository
-
-    @Autowired
-    private lateinit var counterpartyRepository: CounterpartyRepository
 
     //@Scheduled(initialDelayString = delay, fixedRateString = interval)*/
     fun loadFromRegardToDB() {
@@ -63,12 +58,11 @@ class LoaderService {
                 filesCounterparty.url = url.toString()
                 filesCounterparty.counterparty = counterparty
                 filesCounterpartyRepository.save(filesCounterparty)
-
-                //parsing xlsx
-                //val workbook = WorkbookFactory
-                //save
-
             }
         }
     }
+
+    //parsing xlsx
+    //val workbook = WorkbookFactory
+    //save
 }
