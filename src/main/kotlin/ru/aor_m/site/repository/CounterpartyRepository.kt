@@ -6,6 +6,6 @@ import java.util.*
 
 interface CounterpartyRepository: JpaRepository<Counterparty, UUID> {
 
-    fun findByName(name: String): Optional<Counterparty>
+    fun getByName(name: String): Optional<Counterparty>
 
 }

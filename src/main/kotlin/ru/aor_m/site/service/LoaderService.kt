@@ -1,5 +1,6 @@
 package ru.aor_m.site.service
 
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.access.annotation.Secured
 import org.springframework.stereotype.Service
@@ -22,23 +23,22 @@ class LoaderService(private var filesCounterpartyRepository: FilesCounterpartyRe
 
     @Value("\${aor_m.app.localSettingsTempFolder}")
     private var tempDir: String? = null
-    /*companion object {
+    companion object {
+        private val logger = LoggerFactory.getLogger(LoaderService::class.java)
         private const val interval = "PT1D"
         private const val delay = "PT01M"
-    }*/
+    }
 
     //@Scheduled(initialDelayString = delay, fixedRateString = interval)*/
     fun loadFromRegardToDB() {
         val dateFormatter = SimpleDateFormat("dd.MM.yy")
         val currentDate = Date()
         val urlFileName = "regard_priceList_new."+dateFormatter.format(currentDate)+".xlsx"
-        val temp = Files.createFile(Path(tempDir!!+urlFileName))
         val url = URL("https://www.regard.ru/api/price/"+urlFileName)
-        println(""+url+"/"+temp.pathString)
 
         val counterpartyName = url.host.removePrefix("www.")
 
-        val counterpartyOptional = counterpartyRepository.findByName(counterpartyName)
+        val counterpartyOptional = counterpartyRepository.getByName(counterpartyName)
         val counterparty = if (counterpartyOptional.isPresent) {
             counterpartyOptional.get()
         } else {
@@ -65,6 +65,9 @@ class LoaderService(private var filesCounterpartyRepository: FilesCounterpartyRe
         }
 
         if (toDownload == true) {
+            val temp = Files.createFile(Path(tempDir!!+urlFileName))
+            logger.info(""+url+"/"+temp.pathString)
+
             val currentDayLong = Calendar.getInstance()
             currentDayLong[Calendar.HOUR_OF_DAY] = 0
             currentDayLong[Calendar.MINUTE] = 0
