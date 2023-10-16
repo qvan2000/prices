@@ -1,5 +1,6 @@
 package ru.aor_m.site.service
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.access.annotation.Secured
 import org.springframework.stereotype.Service
 import ru.aor_m.site.entity.Counterparty
@@ -8,14 +9,19 @@ import ru.aor_m.site.repository.CounterpartyRepository
 import ru.aor_m.site.repository.FilesCounterpartyRepository
 import java.net.URL
 import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.io.path.Path
 import kotlin.io.path.pathString
 
 
 @Service
 @Secured("ROLE_ADMIN")
 class LoaderService(private var filesCounterpartyRepository: FilesCounterpartyRepository, private var counterpartyRepository: CounterpartyRepository) {
+
+    @Value("\${aor_m.app.localSettingsTempFolder}")
+    private var tempDir: String? = null
     /*companion object {
         private const val interval = "PT1D"
         private const val delay = "PT01M"
@@ -25,8 +31,8 @@ class LoaderService(private var filesCounterpartyRepository: FilesCounterpartyRe
     fun loadFromRegardToDB() {
         val dateFormatter = SimpleDateFormat("dd.MM.yy")
         val currentDate = Date()
-        val temp = Files.createTempFile("", ".xlsx")
         val urlFileName = "regard_priceList_new."+dateFormatter.format(currentDate)+".xlsx"
+        val temp = Files.createFile(Path(tempDir!!+urlFileName))
         val url = URL("https://www.regard.ru/api/price/"+urlFileName)
         println(""+url+"/"+temp.pathString)
 
@@ -42,7 +48,23 @@ class LoaderService(private var filesCounterpartyRepository: FilesCounterpartyRe
             newCounterparty
         }
 
-        if (!filesCounterpartyRepository.findByName(urlFileName).isPresent) {
+        val filesCounterpartyOptional = filesCounterpartyRepository.findByName(urlFileName)
+        val toDownload: Boolean
+        val filesCounterparty: FilesCounterparty
+
+        if (!filesCounterpartyOptional.isPresent) {
+            filesCounterparty = FilesCounterparty()
+            toDownload = true
+        } else {
+            filesCounterparty = filesCounterpartyOptional.get()
+            toDownload = if (!filesCounterparty.isDownloaded) {
+                true
+            } else {
+                false
+            }
+        }
+
+        if (toDownload == true) {
             val currentDayLong = Calendar.getInstance()
             currentDayLong[Calendar.HOUR_OF_DAY] = 0
             currentDayLong[Calendar.MINUTE] = 0
@@ -50,13 +72,13 @@ class LoaderService(private var filesCounterpartyRepository: FilesCounterpartyRe
             currentDayLong[Calendar.MILLISECOND] = 0
 
             //download
-            if (Files.copy(url.openStream(),temp)>0) {
+            if (Files.copy(url.openStream(), temp, StandardCopyOption.REPLACE_EXISTING) > 0) {
                 //save
-                val filesCounterparty = FilesCounterparty()
                 filesCounterparty.date = currentDayLong.timeInMillis
                 filesCounterparty.name = urlFileName
                 filesCounterparty.url = url.toString()
                 filesCounterparty.counterparty = counterparty
+                filesCounterparty.isDownloaded = true
                 filesCounterpartyRepository.save(filesCounterparty)
             }
         }

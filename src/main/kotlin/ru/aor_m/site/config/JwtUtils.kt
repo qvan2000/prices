@@ -14,11 +14,17 @@ import java.util.*
 
 @Component
 class JwtUtils {
+
     @Value("\${aor_m.app.jwtSecret}")
     private val jwtSecret: String? = null
 
     @Value("\${aor_m.app.jwtExpirationMs}")
     private val jwtExpirationMs = 0
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(JwtUtils::class.java)
+    }
+
     fun generateJwtToken(authentication: Authentication): String {
         val userPrincipal = authentication.principal as UserDetailsImpl
         return Jwts.builder()
@@ -52,9 +58,5 @@ class JwtUtils {
             logger.error("JWT claims string is empty: {}", e.message)
         }
         return false
-    }
-
-    companion object {
-        private val logger = LoggerFactory.getLogger(JwtUtils::class.java)
     }
 }
